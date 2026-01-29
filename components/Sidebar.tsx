@@ -2,6 +2,7 @@
 import React from 'react';
 import { Shield, Sparkles } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
+import { NavItem } from '../types';
 
 interface SidebarProps {
   activeTab: string;
@@ -29,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isAiThinking
       </div>
 
       <nav className="flex-1 py-10 px-6 space-y-2 overflow-y-auto">
-        {NAV_ITEMS.map((item) => (
+        {NAV_ITEMS.map((item: NavItem) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
