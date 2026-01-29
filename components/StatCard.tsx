@@ -10,19 +10,35 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = ({ label, value, icon, trend, trendType }) => {
+  // Check if the value is a long string to adjust font size dynamically
+  const isLongValue = typeof value === 'string' && value.length > 10;
+
   return (
-    <div className="bg-white border-2 border-slate-100 p-7 rounded-[2rem] flex items-start justify-between shadow-soft hover-lift transition-all">
-      <div>
-        <p className="text-slate-400 text-xs font-black uppercase tracking-[0.15em] mb-2">{label}</p>
-        <h3 className="text-3xl font-black text-slate-900 mb-2 tracking-tighter">{value}</h3>
+    <div className="bg-white border-2 border-slate-100 p-7 rounded-[2.5rem] flex items-start justify-between shadow-soft hover-lift transition-all min-h-[180px] overflow-hidden group">
+      <div className="flex-1 min-w-0 pr-2 h-full flex flex-col">
+        <p className="text-slate-400 text-[9px] font-black uppercase tracking-[0.2em] mb-3 truncate">
+          {label}
+        </p>
+        
+        <h3 className={`font-black text-slate-900 tracking-tighter mb-auto ${
+          isLongValue ? 'text-2xl leading-tight' : 'text-4xl'
+        }`}>
+          {value}
+        </h3>
+
         {trend && (
-          <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full ${trendType === 'up' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
-            {trend}
-          </span>
+          <div className="mt-4">
+            <span className={`inline-flex items-center text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest whitespace-nowrap ${
+              trendType === 'down' ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'
+            }`}>
+              {trend}
+            </span>
+          </div>
         )}
       </div>
-      <div className={`p-3.5 rounded-2xl ${
-        trendType === 'down' ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-600'
+
+      <div className={`p-4 rounded-2xl shrink-0 group-hover:scale-110 transition-transform duration-300 ${
+        trendType === 'down' ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-500'
       }`}>
         {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 24, strokeWidth: 2.5 }) : icon}
       </div>
