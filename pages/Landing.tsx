@@ -1,12 +1,61 @@
 
 import React from 'react';
-import { Play, Zap, Shield, Bug, Activity, FileText, Download, Cpu, Search, Target, ChevronRight, Sparkles } from 'lucide-react';
+import { Zap, Shield, Activity, FileText, Download, Search, Target, ChevronRight, Sparkles } from 'lucide-react';
 
 interface LandingProps {
   onStartScan: () => void;
 }
 
+interface FeatureItem {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}
+
 const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
+  const features: FeatureItem[] = [
+    { 
+      icon: <Sparkles className="text-emerald-500" />, 
+      title: 'AI Payload Synthesis', 
+      desc: 'Gemini 3 dynamically generates sophisticated attack vectors based on your target URL and scan parameters.' 
+    },
+    { 
+      icon: <Search className="text-emerald-500" />, 
+      title: 'Intelligent Fuzzing', 
+      desc: 'Multi-threaded execution engine with smart rate limiting to detect SQLi, XSS, and broken authentication.' 
+    },
+    { 
+      icon: <Shield className="text-emerald-500" />, 
+      title: 'Evidence Validation', 
+      desc: 'View actual response snippets and forensics for every finding to eliminate noise and verify threats.' 
+    },
+    { 
+      icon: <Zap className="text-emerald-500" />, 
+      title: 'Live Runtime Stream', 
+      desc: 'Monitor the fuzzer activity in real-time with our high-fidelity terminal interface and live metrics.' 
+    },
+    { 
+      icon: <FileText className="text-emerald-500" />, 
+      title: 'Remediation Intelligence', 
+      desc: 'Every vulnerability comes with bespoke fix recommendations and remediation guidance for your developers.' 
+    },
+    { 
+      icon: <Activity className="text-emerald-500" />, 
+      title: 'Threat Surface Mapping', 
+      desc: 'Visualize your security posture with dashboard analytics covering hit rates, latency, and threat distribution.' 
+    },
+    { 
+      icon: <Target className="text-emerald-500" />, 
+      title: 'Adaptive Depth Control', 
+      desc: 'Tune your audit intensity with configurable scan iterations and focused payload logic for specific vectors.' 
+    },
+    { 
+      icon: <Download className="text-emerald-500" />, 
+      title: 'Audit-Ready Exports', 
+      desc: 'Instantly generate CSV datasets or detailed text reports for stakeholders and compliance forensics.' 
+    }
+  ];
+
   return (
     <div className="bg-white min-h-screen">
       {/* Hero Section */}
@@ -59,19 +108,6 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
                   <ChevronRight size={16} />
                   <span>Initializing AI payload generator...</span>
                 </div>
-                <div className="flex items-center gap-2 text-slate-300">
-                  <span className="text-emerald-500">✓</span>
-                  <span>SQL Injection payloads loaded (847)</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-300">
-                  <span className="text-emerald-500">✓</span>
-                  <span>XSS vectors generated (1,203)</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-300">
-                  <span className="text-emerald-500">✓</span>
-                  <span>Auth bypass patterns ready (156)</span>
-                </div>
-                
                 <div className="mt-8 pt-8 border-t border-slate-700">
                   <div className="bg-amber-900/20 border border-amber-500/30 p-5 rounded-2xl space-y-2">
                     <div className="flex items-center gap-2 text-amber-500 font-black text-xs uppercase tracking-widest">
@@ -79,22 +115,9 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
                       Vulnerability Found
                     </div>
                     <p className="text-amber-100 font-bold">SQLi detected in /api/users?id=</p>
-                    <p className="text-slate-400 text-xs">Payload: <span className="text-amber-200">' OR '1'='1' --</span></p>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-2 text-emerald-400 pt-4">
-                  <ChevronRight size={16} />
-                  <span>Generating remediation report</span>
-                  <span className="w-2 h-4 bg-emerald-500 animate-pulse"></span>
-                </div>
               </div>
-            </div>
-
-            {/* Floating Badge */}
-            <div className="absolute -top-6 -right-6 bg-white border-2 border-slate-100 p-4 rounded-2xl shadow-xl flex items-center gap-3 animate-bounce">
-              <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-              <span className="text-xs font-black text-slate-900">Live Scanning</span>
             </div>
           </div>
         </div>
@@ -119,54 +142,10 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
             <h2 className="text-5xl font-black text-slate-900 tracking-tight">
               Security Testing, <span className="text-emerald-500">Reimagined</span>
             </h2>
-            <p className="text-lg text-slate-500 font-bold">
-              Powered by Gemini 3 Core, our fuzzer adapts to your target's specific architecture to find critical zero-day vulnerabilities.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { 
-                icon: <Sparkles className="text-emerald-500" />, 
-                title: 'AI Payload Synthesis', 
-                desc: 'Gemini 3 dynamically generates sophisticated attack vectors based on your target URL and scan parameters.' 
-              },
-              { 
-                icon: <Search className="text-emerald-500" />, 
-                title: 'Intelligent Fuzzing', 
-                desc: 'Multi-threaded execution engine with smart rate limiting to detect SQLi, XSS, and broken authentication.' 
-              },
-              { 
-                icon: <Shield className="text-emerald-500" />, 
-                title: 'Evidence Validation', 
-                desc: 'View actual response snippets and forensics for every finding to eliminate noise and verify threats.' 
-              },
-              { 
-                icon: <Zap className="text-emerald-500" />, 
-                title: 'Live Runtime Stream', 
-                desc: 'Monitor the fuzzer activity in real-time with our high-fidelity terminal interface and live metrics.' 
-              },
-              { 
-                icon: <FileText className="text-emerald-500" />, 
-                title: 'Remediation Intelligence', 
-                desc: 'Every vulnerability comes with bespoke fix recommendations and remediation guidance for your developers.' 
-              },
-              { 
-                icon: <Activity className="text-emerald-500" />, 
-                title: 'Threat Surface Mapping', 
-                desc: 'Visualize your security posture with dashboard analytics covering hit rates, latency, and threat distribution.' 
-              },
-              { 
-                icon: <Target className="text-emerald-500" />, 
-                title: 'Adaptive Depth Control', 
-                desc: 'Tune your audit intensity with configurable scan iterations and focused payload logic for specific vectors.' 
-              },
-              { 
-                icon: <Download className="text-emerald-500" />, 
-                title: 'Audit-Ready Exports', 
-                desc: 'Instantly generate CSV datasets or detailed text reports for stakeholders and compliance forensics.' 
-              }
-            ].map((feature, i) => (
+            {features.map((feature: FeatureItem, i: number) => (
               <div key={i} className="bg-white p-10 rounded-[2.5rem] border-2 border-transparent hover:border-emerald-100 shadow-soft hover-lift transition-all group">
                 <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-50 group-hover:scale-110 transition-all">
                   {React.isValidElement(feature.icon) ? React.cloneElement(feature.icon as React.ReactElement<any>, { size: 28, strokeWidth: 2.5 }) : feature.icon}
@@ -175,50 +154,6 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
                 <p className="text-slate-500 text-sm font-bold leading-relaxed">{feature.desc}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-32 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-white border-4 border-emerald-50 rounded-[4rem] p-16 md:p-24 text-center space-y-12 shadow-[0_32px_128px_-32px_rgba(16,185,129,0.1)] relative overflow-hidden group">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center -mt-12 border-4 border-white shadow-sm">
-              <Shield className="text-emerald-500" size={32} fill="currentColor" />
-            </div>
-
-            <div className="space-y-6">
-              <h2 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
-                Ready to Secure Your <span className="text-emerald-500">Application?</span>
-              </h2>
-              <p className="text-xl text-slate-500 font-bold max-w-2xl mx-auto leading-relaxed">
-                Experience the power of AI-driven security auditing today. Discover vulnerabilities before attackers can exploit them.
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center gap-10">
-              <button 
-                onClick={onStartScan}
-                className="px-12 py-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] font-black text-xl transition-all shadow-2xl shadow-emerald-200 flex items-center gap-4 active:scale-95 group-hover:px-14 duration-300"
-              >
-                Get Started <ChevronRight size={24} strokeWidth={3} />
-              </button>
-
-              <div className="flex flex-wrap justify-center gap-x-10 gap-y-4">
-                {[
-                  'AI Payloads',
-                  'Context-Aware Vectors',
-                  'Zero-Day Detection',
-                  'Live Forensics Stream',
-                  'Neural Audit Engine'
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-emerald-500 rounded-full shadow-lg shadow-emerald-200"></div>
-                    <span className="text-slate-600 font-bold text-lg">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </section>
