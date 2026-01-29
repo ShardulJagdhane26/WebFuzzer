@@ -169,8 +169,7 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
             ].map((feature, i) => (
               <div key={i} className="bg-white p-10 rounded-[2.5rem] border-2 border-transparent hover:border-emerald-100 shadow-soft hover-lift transition-all group">
                 <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-50 group-hover:scale-110 transition-all">
-                  {/* Fix: Cast feature.icon to React.ReactElement<any> to allow additional props like size and strokeWidth */}
-                  {React.cloneElement(feature.icon as React.ReactElement<any>, { size: 28, strokeWidth: 2.5 })}
+                  {React.isValidElement(feature.icon) ? React.cloneElement(feature.icon as React.ReactElement<any>, { size: 28, strokeWidth: 2.5 }) : feature.icon}
                 </div>
                 <h3 className="text-xl font-black text-slate-900 mb-3">{feature.title}</h3>
                 <p className="text-slate-500 text-sm font-bold leading-relaxed">{feature.desc}</p>
