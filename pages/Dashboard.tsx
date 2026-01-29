@@ -90,11 +90,14 @@ const Dashboard: React.FC<DashboardProps> = ({ progress, onNewScan, isScanning, 
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {[
-            { label: 'Audit Velocity', val: isScanning ? `${Math.floor(Math.random() * 50 + 200)} req/s` : '0 req/s', icon: <Zap size={20} />, color: 'text-emerald-600' },
-            { label: 'Avg Latency', val: isScanning ? `${Math.floor(Math.random() * 20 + 30)}ms` : '0ms', icon: <Activity size={20} />, color: 'text-slate-900' },
-            { label: 'Findings Logged', val: vulnerabilities.length.toString(), icon: <Bug size={20} />, color: 'text-rose-600' },
+            { label: 'Audit Velocity', val: isScanning ? `${Math.floor(Math.random() * 50 + 200)} req/s` : '0 req/s', icon: <Zap size={22} />, color: 'text-emerald-600' },
+            { label: 'Avg Latency', val: isScanning ? `${Math.floor(Math.random() * 20 + 30)}ms` : '0ms', icon: <Activity size={22} />, color: 'text-slate-900' },
+            { label: 'Findings Logged', val: vulnerabilities.length.toString(), icon: <Bug size={22} />, color: 'text-rose-600' },
           ].map((item, idx) => (
             <div key={idx} className="p-8 bg-slate-50/50 rounded-[2.5rem] border-2 border-slate-100 flex flex-col items-center text-center hover-lift transition-all">
+              <div className={`mb-4 ${item.color} p-3 bg-white rounded-2xl shadow-sm border border-slate-100`}>
+                {item.icon}
+              </div>
               <p className="text-[10px] text-slate-400 mb-3 uppercase tracking-[0.2em] font-black">{item.label}</p>
               <div className={`flex items-center gap-3 mb-1 ${item.color}`}>
                 <p className="text-4xl font-black tracking-tighter">{item.val}</p>
