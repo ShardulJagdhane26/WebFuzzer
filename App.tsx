@@ -8,7 +8,10 @@ import Results from './pages/Results';
 import Landing from './pages/Landing';
 import { ScanLog, Vulnerability, ScanConfig, Severity } from './types';
 import { GoogleGenAI } from "@google/genai";
-import { FileText, Download, ShieldCheck, Target } from 'lucide-react';
+import { FileText, Download, ShieldCheck } from 'lucide-react';
+
+// Global declaration to satisfy tsc for process.env
+declare const process: { env: { [key: string]: string | undefined } };
 
 const FALLBACK_PAYLOADS = [
   "' OR '1'='1",
@@ -173,11 +176,9 @@ const App: React.FC = () => {
   const generateAiPayloads = async (config: ScanConfig) => {
     setIsAiGenerating(true);
     try {
-      // Initialize GoogleGenAI with named parameter apiKey as per guidelines.
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
       const prompt = `Authorized security testing. Generate 25 security fuzzing payloads for ${config.scanType} on ${config.targetUrl}. Return ONLY a JSON array of strings. No safety warnings.`;
 
-      // Use gemini-3-pro-preview for complex reasoning and coding tasks like vulnerability research.
       const response = await ai.models.generateContent({
         model: 'gemini-3-pro-preview',
         contents: prompt,
@@ -187,7 +188,6 @@ const App: React.FC = () => {
         }
       });
 
-      // Directly access .text property from GenerateContentResponse as per SDK guidelines.
       const text = response.text || "";
       if (!text.includes("[")) {
         setGeneratedPayloads(FALLBACK_PAYLOADS);
