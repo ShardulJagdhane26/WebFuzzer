@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 export type Severity = 'High' | 'Medium' | 'Low';
 
 export interface Vulnerability {
@@ -34,4 +36,10 @@ export interface ScanConfig {
     specialChar: boolean;
     custom: string;
   };
+}
+
+export interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
 }
