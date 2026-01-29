@@ -5,10 +5,8 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   define: {
-    // This allows the app to use process.env.API_KEY as required by the Gemini SDK
-    'process.env': {
-      API_KEY: JSON.stringify(process.env.API_KEY)
-    }
+    // This refined define ensures process.env.API_KEY is replaced during build
+    'process.env.API_KEY': JSON.stringify(process.env.API_KEY)
   },
   server: {
     port: 3000
