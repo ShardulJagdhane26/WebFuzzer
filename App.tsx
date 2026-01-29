@@ -40,7 +40,6 @@ const STORAGE_KEYS = {
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   
-  // State Initialization from LocalStorage
   const [logs, setLogs] = useState<ScanLog[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.LOGS);
     return saved ? JSON.parse(saved) : [];
@@ -81,24 +80,21 @@ const App: React.FC = () => {
   
   const uniqueEndpointsRef = useRef<Set<string>>(new Set());
 
-  // Re-hydrate unique endpoints
   useEffect(() => {
     uniqueEndpointsRef.current.clear();
     logs.forEach(log => uniqueEndpointsRef.current.add(log.url));
   }, [logs.length]);
 
-  // Sync state to LocalStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(logs));
     localStorage.setItem(STORAGE_KEYS.VULNS, JSON.stringify(vulnerabilities));
     localStorage.setItem(STORAGE_KEYS.PROGRESS, progress.toString());
-    localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(scanConfig));
+    if (scanConfig) localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(scanConfig));
     localStorage.setItem(STORAGE_KEYS.TOTAL_REQS, totalRequests.toString());
     localStorage.setItem(STORAGE_KEYS.TOTAL_ENDPOINTS, totalEndpoints.toString());
     localStorage.setItem(STORAGE_KEYS.IS_SCANNING, isScanning.toString());
   }, [logs, vulnerabilities, progress, scanConfig, totalRequests, totalEndpoints, isScanning]);
 
-  // Scan Logic
   useEffect(() => {
     let interval: any;
     if (isScanning && progress < 100) {
