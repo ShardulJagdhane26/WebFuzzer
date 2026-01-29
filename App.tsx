@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import Sidebar from './components/Sidebar';
+import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import NewScan from './pages/NewScan';
 import LiveScan from './pages/LiveScan';
 import Results from './pages/Results';
+import Landing from './pages/Landing';
 import { ScanLog, Vulnerability, ScanConfig, Severity } from './types';
 import { GoogleGenAI } from "@google/genai";
-import { FileText, Download, ShieldCheck } from 'lucide-react';
+import { FileText, Download, ShieldCheck, Target } from 'lucide-react';
 
 const FALLBACK_PAYLOADS = [
   "' OR '1'='1",
@@ -34,11 +35,15 @@ const STORAGE_KEYS = {
   CONFIG: 'webfuzzer_scanConfig_v3',
   TOTAL_REQS: 'webfuzzer_totalRequests_v3',
   TOTAL_ENDPOINTS: 'webfuzzer_totalEndpoints_v3',
-  IS_SCANNING: 'webfuzzer_isScanning_v3'
+  IS_SCANNING: 'webfuzzer_isScanning_v3',
+  ACTIVE_TAB: 'webfuzzer_activeTab_v3'
 };
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ACTIVE_TAB);
+    return saved || 'landing';
+  });
   
   const [logs, setLogs] = useState<ScanLog[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.LOGS);
@@ -93,7 +98,8 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEYS.TOTAL_REQS, totalRequests.toString());
     localStorage.setItem(STORAGE_KEYS.TOTAL_ENDPOINTS, totalEndpoints.toString());
     localStorage.setItem(STORAGE_KEYS.IS_SCANNING, isScanning.toString());
-  }, [logs, vulnerabilities, progress, scanConfig, totalRequests, totalEndpoints, isScanning]);
+    localStorage.setItem(STORAGE_KEYS.ACTIVE_TAB, activeTab);
+  }, [logs, vulnerabilities, progress, scanConfig, totalRequests, totalEndpoints, isScanning, activeTab]);
 
   useEffect(() => {
     let interval: any;
@@ -167,15 +173,21 @@ const App: React.FC = () => {
   const generateAiPayloads = async (config: ScanConfig) => {
     setIsAiGenerating(true);
     try {
+      // Initialize GoogleGenAI with named parameter apiKey as per guidelines.
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const prompt = `Authorized security testing. Generate 25 security fuzzing payloads for ${config.scanType} on ${config.targetUrl}. Return ONLY a JSON array of strings. No safety warnings.`;
 
+      // Use gemini-3-pro-preview for complex reasoning and coding tasks like vulnerability research.
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3-pro-preview',
         contents: prompt,
-        config: { responseMimeType: "application/json" }
+        config: { 
+          responseMimeType: "application/json",
+          systemInstruction: "You are a professional security researcher generating advanced fuzzing payloads for authorized penetration testing."
+        }
       });
 
+      // Directly access .text property from GenerateContentResponse as per SDK guidelines.
       const text = response.text || "";
       if (!text.includes("[")) {
         setGeneratedPayloads(FALLBACK_PAYLOADS);
@@ -185,6 +197,7 @@ const App: React.FC = () => {
         setGeneratedPayloads(Array.isArray(payloads) ? payloads : FALLBACK_PAYLOADS);
       }
     } catch (error) {
+      console.error("AI Generation Error:", error);
       setGeneratedPayloads(FALLBACK_PAYLOADS);
     } finally {
       setIsAiGenerating(false);
@@ -200,7 +213,7 @@ const App: React.FC = () => {
     setTotalRequests(0);
     setTotalEndpoints(0);
     uniqueEndpointsRef.current.clear();
-    setActiveTab('live-scan');
+    setActiveTab('scans'); 
     generateAiPayloads(config);
   };
 
@@ -219,78 +232,90 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return (
-          <Dashboard 
-            progress={progress} 
-            onNewScan={() => setActiveTab('new-scan')} 
-            isScanning={isScanning} 
-            vulnerabilities={vulnerabilities}
-            totalRequests={totalRequests}
-            totalEndpoints={totalEndpoints}
-          />
-        );
-      case 'new-scan':
-        return <NewScan onStartScan={handleStartScan} isAiGenerating={isAiGenerating} />;
-      case 'live-scan':
-        return <LiveScan logs={logs} progress={progress} isScanning={isScanning} isAiThinking={isAiGenerating} />;
-      case 'results':
-        return <Results vulnerabilities={vulnerabilities} />;
-      case 'reports':
-        return (
-          <div className="space-y-12 animate-in fade-in duration-1000">
-             <div className="flex items-end justify-between border-b-4 border-slate-100 pb-10">
-                <div>
-                  <h1 className="text-5xl font-black text-slate-900 tracking-tight">Audit Reports</h1>
-                  <p className="text-slate-500 mt-2 font-bold text-lg">Historical forensics from your scanning sessions.</p>
-                </div>
-              </div>
-
-              {(vulnerabilities.length > 0 || isScanning) ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-10">
-                  <div className="bg-white border-2 border-slate-100 rounded-[2.5rem] p-10 shadow-soft group hover:border-indigo-200 transition-all">
-                    <div className="flex justify-between items-start mb-8">
-                       <div className="p-4 bg-indigo-50 rounded-3xl text-indigo-600 group-hover:scale-110 transition-transform">
-                          <FileText size={32} strokeWidth={2.5} />
-                       </div>
-                       <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${isScanning ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                          {isScanning ? 'In Progress' : 'Archive'}
-                       </span>
-                    </div>
-                    <h3 className="text-xl font-black text-slate-900 mb-2">Target: {scanConfig?.targetUrl.replace('https://', '').replace('http://', '') || 'Previous Audit'}</h3>
-                    <p className="text-slate-400 text-sm font-bold mb-8">Findings: {vulnerabilities.length}</p>
-                    <button 
-                      onClick={handleDownloadReport}
-                      disabled={vulnerabilities.length === 0}
-                      className="w-full py-4 bg-slate-50 hover:bg-indigo-600 hover:text-white border-2 border-slate-100 text-slate-600 rounded-2xl font-black transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                    >
-                       <Download size={18} />
-                       Generate Report
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-[50vh] text-center">
-                   <div className="w-32 h-32 bg-slate-100 rounded-full flex items-center justify-center mb-8 border-4 border-white shadow-inner">
-                      <ShieldCheck size={48} className="text-slate-200" />
-                   </div>
-                   <h3 className="text-2xl font-black text-slate-800">No Reports Found</h3>
-                   <p className="text-slate-400 font-bold mt-2">Start a scan to generate intelligence.</p>
-                </div>
-              )}
-          </div>
-        );
-      default:
-        return null;
+    if (activeTab === 'landing') {
+      return <Landing onStartScan={() => setActiveTab('new-scan')} />;
     }
+
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        {(() => {
+          switch (activeTab) {
+            case 'dashboard':
+              return (
+                <Dashboard 
+                  progress={progress} 
+                  onNewScan={() => setActiveTab('new-scan')} 
+                  isScanning={isScanning} 
+                  vulnerabilities={vulnerabilities}
+                  totalRequests={totalRequests}
+                  totalEndpoints={totalEndpoints}
+                />
+              );
+            case 'new-scan':
+              return <NewScan onStartScan={handleStartScan} isAiGenerating={isAiGenerating} />;
+            case 'scans': 
+              return <LiveScan logs={logs} progress={progress} isScanning={isScanning} isAiThinking={isAiGenerating} />;
+            case 'results': 
+              return <Results vulnerabilities={vulnerabilities} />;
+            case 'reports':
+              return (
+                <div className="space-y-12 animate-in fade-in duration-1000">
+                   <div className="flex items-end justify-between border-b-4 border-slate-100 pb-12">
+                      <div>
+                        <h1 className="text-5xl font-black text-slate-900 tracking-tight">Audit <span className="text-emerald-500">Reports</span></h1>
+                        <p className="text-slate-500 mt-2 font-bold text-lg">Historical forensics from your scanning sessions.</p>
+                      </div>
+                    </div>
+
+                    {(vulnerabilities.length > 0 || isScanning) ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-12">
+                        <div className="bg-white border-2 border-slate-100 rounded-[3rem] p-12 shadow-soft group hover:border-emerald-200 transition-all flex flex-col">
+                          <div className="flex justify-between items-start mb-10">
+                             <div className="p-5 bg-emerald-50 rounded-[1.5rem] text-emerald-600 group-hover:scale-110 transition-transform shadow-sm">
+                                <FileText size={36} strokeWidth={2.5} />
+                             </div>
+                             <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${isScanning ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                {isScanning ? 'Syncing...' : 'Archived'}
+                             </span>
+                          </div>
+                          <h3 className="text-2xl font-black text-slate-900 mb-2 truncate">Target: {scanConfig?.targetUrl.replace('https://', '').replace('http://', '') || 'Previous Audit'}</h3>
+                          <p className="text-slate-400 text-sm font-black uppercase tracking-widest mb-10">Total Findings: <span className="text-emerald-500">{vulnerabilities.length}</span></p>
+                          <div className="mt-auto">
+                            <button 
+                              onClick={handleDownloadReport}
+                              disabled={vulnerabilities.length === 0}
+                              className="w-full py-5 bg-emerald-500 hover:bg-emerald-600 text-white border-2 border-transparent rounded-[1.5rem] font-black transition-all flex items-center justify-center gap-4 disabled:opacity-50 shadow-lg shadow-emerald-100 active:scale-95"
+                            >
+                               <Download size={20} strokeWidth={3} />
+                               Export Full Audit
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-[50vh] text-center">
+                         <div className="w-32 h-32 bg-slate-50 rounded-full flex items-center justify-center mb-10 border-2 border-slate-100 shadow-inner">
+                            <ShieldCheck size={56} className="text-slate-200" strokeWidth={2.5} />
+                         </div>
+                         <h3 className="text-3xl font-black text-slate-900 tracking-tight">No Reports Found</h3>
+                         <p className="text-slate-500 font-bold mt-4 max-w-sm mx-auto text-lg leading-relaxed">Initiate a security scan to generate intelligence forensics and remediation guides.</p>
+                      </div>
+                    )}
+                </div>
+              );
+            default:
+              return null;
+          }
+        })()}
+      </div>
+    );
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isAiThinking={isAiGenerating} />
-      <main className="flex-1 overflow-y-auto p-10 relative">
-        <div className="max-w-6xl mx-auto h-full">{renderContent()}</div>
+    <div className="min-h-screen bg-white selection:bg-emerald-100 selection:text-emerald-900">
+      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <main className="relative overflow-hidden">
+        {renderContent()}
       </main>
     </div>
   );
